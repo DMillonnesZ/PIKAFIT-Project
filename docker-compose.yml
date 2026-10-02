@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:8
+    container_name: pikafit-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      MONGO_DB: ${MONGO_DB}
+      ADMIN_DB_USER: ${ADMIN_DB_USER}
+      ADMIN_DB_PASSWORD: ${ADMIN_DB_PASSWORD}
+      USUARIO_DB_USER: ${USUARIO_DB_USER}
+      USUARIO_DB_PASSWORD: ${USUARIO_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./database/mongo/init.js:/docker-entrypoint-initdb.d/01-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - plataforma-net
+
+volumes:
+  mongo_data:
+
+networks:
+  plataforma-net:
