@@ -7,6 +7,8 @@ Plataforma de gestión y bienestar físico para gimnasios: rutinas personalizada
 | Integrante                         | GitHub                                         |
 | ---------------------------------- | ---------------------------------------------- |
 | Millones Vasquez, Daniel Alejandro | [@DMillonnesZ](https://github.com/DMillonnesZ) |
+| Castillo Sumire, Jesus Jose | [@JesusCastillo2026](https://github.com/JesusCastillo2026) |
+| Vasquez Flores, Luis Antonio | [@AntonioPromaweb](https://github.com/AntonioPromaweb) |
 
 ## Metodología
 
