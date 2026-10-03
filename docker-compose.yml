@@ -25,6 +25,71 @@ services:
     networks:
       - plataforma-net
 
+  admin-back:
+    profiles: ["apps"]
+    build: ./Administracion/back
+    container_name: pikafit-admin-back
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
+      MONGO_DB: ${MONGO_DB}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,admin-back
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - plataforma-net
+
+  usuario-back:
+    profiles: ["apps"]
+    build: ./Usuario/back
+    container_name: pikafit-usuario-back
+    restart: unless-stopped
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${USUARIO_DB_USER}:${USUARIO_DB_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
+      SERVER_ADDRESS: 0.0.0.0
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - plataforma-net
+
+  admin-front:
+    profiles: ["apps"]
+    build:
+      context: ./Administracion/front-web
+      args:
+        VITE_API_URL: ${ADMIN_API_URL:-http://localhost:8000}
+    container_name: pikafit-admin-front
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - admin-back
+    networks:
+      - plataforma-net
+
+  usuario-front:
+    profiles: ["apps"]
+    build:
+      context: ./Usuario/front-web
+      args:
+        VITE_API_URL: ${USUARIO_API_URL:-http://localhost:8080}
+    container_name: pikafit-usuario-front
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - usuario-back
+    networks:
+      - plataforma-net
+
 volumes:
   mongo_data:
 
