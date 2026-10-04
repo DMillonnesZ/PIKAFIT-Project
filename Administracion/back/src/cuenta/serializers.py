@@ -1,7 +1,7 @@
 """Entrada y salida JSON del módulo cuenta. Validan forma y tipo; las reglas de negocio van en services.py."""
-from datetime import timezone as dt_timezone
-
 from rest_framework import serializers
+
+from core.campos import FechaHoraUTCField
 
 CORREO_ERRORES = {
     "required": "Ingresa tu correo electrónico.",
@@ -52,8 +52,7 @@ class AdministradorSerializer(serializers.Serializer):
     apellidos = serializers.CharField(read_only=True)
     rol = serializers.CharField(read_only=True)
     organizacion = serializers.SerializerMethodField()
-    ultimo_acceso = serializers.DateTimeField(source="last_login", read_only=True,
-                                              default_timezone=dt_timezone.utc)
+    ultimo_acceso = FechaHoraUTCField(source="last_login", read_only=True)
 
     def get_organizacion(self, obj):
         if obj.clinica_id:
