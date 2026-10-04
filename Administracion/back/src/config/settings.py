@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_mongodb_backend',
     'corsheaders',
+    'rest_framework',
+    'sede',
+    'clinica',
 ]
 
 MIDDLEWARE = [
