@@ -28,7 +28,7 @@ class Administrador(AbstractBaseUser):
     password = models.CharField("contraseña", max_length=128, db_column="contrasena_hash")
     last_login = models.DateTimeField("último acceso", null=True, blank=True, db_column="ultimo_acceso")
 
-    objects = AdministradorManager()
+    objects: AdministradorManager = AdministradorManager()
 
     USERNAME_FIELD = "correo"
     EMAIL_FIELD = "correo"
