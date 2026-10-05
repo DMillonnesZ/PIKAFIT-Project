@@ -38,6 +38,7 @@ class SocioEdicionSerializer(serializers.Serializer):
 
 class SocioSalidaSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
+    sede_id = serializers.CharField(read_only=True)
     class Meta:
         model = Socio
         fields = ["id", "nombres", "apellidos", "dni", "correo", "sede_id", "activo"]
@@ -46,6 +47,8 @@ class SocioSalidaSerializer(serializers.ModelSerializer):
 
 class MembresiaSalidaSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
+    socio_id = serializers.CharField(read_only=True)
+    plan_id = serializers.CharField(read_only=True)
     class Meta:
         model = Membresia
         fields = ["id", "socio_id", "plan_id", "fecha_inicio", "fecha_fin", "activa"]
