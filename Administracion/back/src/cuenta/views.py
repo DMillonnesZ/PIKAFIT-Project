@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from . import services
@@ -31,10 +32,13 @@ def _validar(serializer_class, request) -> dict:
 # Sesión
 class SesionView(APIView):
     """
-    POST   /api/v1/auth/sesion   Inicia sesión (público).
+    POST   /api/v1/auth/sesion   Inicia sesión (público, con límite de intentos por IP).
     GET    /api/v1/auth/sesion   Datos y rol de la cuenta con sesión activa (requiere token).
     DELETE /api/v1/auth/sesion   Cierra la sesión (requiere token).
     """
+
+    # Límite definido en settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]
+    throttle_scope = "inicio_sesion"
 
     def get_authenticators(self):
         if self.request.method == "POST":
@@ -45,6 +49,12 @@ class SesionView(APIView):
         if self.request.method == "POST":
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def get_throttles(self):
+        # Solo el inicio de sesión tiene límite; consultar o cerrar la sesión no
+        if self.request.method == "POST":
+            return [ScopedRateThrottle()]
+        return []
 
     def post(self, request):
         datos = _validar(IniciarSesionSerializer, request)
@@ -85,10 +95,13 @@ class RenovarSesionView(APIView):
 
 # Recuperación de contraseña
 class RecuperacionContrasenaView(APIView):
-    """POST /api/v1/auth/contrasena/recuperacion   Solicita el enlace de restablecimiento (público)."""
+    """POST /api/v1/auth/contrasena/recuperacion   Solicita el enlace de restablecimiento (público, con límite por IP)."""
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    # Evita el envío masivo de correos desde una misma IP
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "recuperacion"
 
     def post(self, request):
         datos = _validar(SolicitarRecuperacionSerializer, request)

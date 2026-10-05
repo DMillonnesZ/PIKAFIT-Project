@@ -164,6 +164,12 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "EXCEPTION_HANDLER": "core.excepciones.manejador_global",
+    # Límite de solicitudes por IP en los endpoints públicos sensibles (solo aplica a las vistas que declaran el scope)
+    "DEFAULT_THROTTLE_RATES": {
+        "inicio_sesion": "10/min",
+        "recuperacion": "5/hour",
+    },
+
 }
 
 # Tokens de sesión (JWT). Clave propia, distinta de SECRET_KEY y de la usada por Spring Boot.
