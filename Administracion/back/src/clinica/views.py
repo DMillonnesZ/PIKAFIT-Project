@@ -28,7 +28,7 @@ class ClinicasVista(APIView):
 
     def post(self, request):
         datos, error = _validar(request)
-        if error:
+        if error is not None:
             return error
         try:
             clinica = services.crear(datos)
@@ -42,7 +42,7 @@ class ClinicaDetalleVista(APIView):
 
     def patch(self, request, clinica_id):
         datos, error = _validar(request, parcial=True)
-        if error:
+        if error is not None:
             return error
         if not datos:
             return Response({"codigo": "DATOS_INVALIDOS", "mensaje": "No hay campos para actualizar."}, status=400)

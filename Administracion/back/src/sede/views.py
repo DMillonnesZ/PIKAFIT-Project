@@ -27,7 +27,7 @@ class SedesVista(APIView):
 
     def post(self, request):
         datos, error = _validar(request)
-        if error:
+        if error is not None:
             return error
         sede = services.crear(datos)
         return Response(SedeSalidaSerializer(sede).data, status=status.HTTP_201_CREATED)
@@ -38,7 +38,7 @@ class SedeDetalleVista(APIView):
 
     def patch(self, request, sede_id):
         datos, error = _validar(request, parcial=True)
-        if error:
+        if error is not None:
             return error
         if not datos:
             return Response({"codigo": "DATOS_INVALIDOS", "mensaje": "No hay campos para actualizar."}, status=400)

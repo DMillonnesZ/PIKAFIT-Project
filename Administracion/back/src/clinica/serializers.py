@@ -7,9 +7,14 @@ from .models import Clinica
 
 
 def validar_ruc(ruc):
-    # SUNAT: 11 dígitos; 10 y 15 identifican personas, 20 personas jurídicas.
+    # Estructura de RUC peruano y su dígito verificador.
     if not re.fullmatch(r"(10|15|20)[0-9]{9}", ruc or ""):
         raise serializers.ValidationError("El RUC debe tener 11 dígitos y un prefijo válido.")
+    pesos = (5, 4, 3, 2, 7, 6, 5, 4, 3, 2)
+    diferencia = 11 - sum(int(digito) * peso for digito, peso in zip(ruc[:10], pesos)) % 11
+    verificador = diferencia if diferencia < 10 else diferencia - 10
+    if verificador != int(ruc[-1]):
+        raise serializers.ValidationError("El dígito verificador del RUC no es válido.")
     return ruc
 
 
