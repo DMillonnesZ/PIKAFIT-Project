@@ -76,8 +76,8 @@ class SesionView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class RenovarSesionView(APIView):
-    """POST /api/v1/auth/sesion/renovar   Entrega un nuevo token de acceso (público)."""
+class RenovacionSesionView(APIView):
+    """POST /api/v1/auth/sesion/renovacion   Entrega un nuevo token de acceso (público)."""
 
     authentication_classes = []
     permission_classes = [AllowAny]
