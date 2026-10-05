@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     environment:
       # --- Base de datos
-      MONGO_URI: mongodb://${ADMIN_DB_USER:?Usuario BD de Django}:${ADMIN_DB_PASSWORD:?Contraseña BD de Django}@mongo:27017/${MONGO_DB:?Nombre de la base de datos}?authSource=${MONGO_DB:?Nombre de la base de datos}
+      MONGO_URI: mongodb://${ADMIN_DB_USER:?Usuario BD de Django}:${ADMIN_DB_PASSWORD:?Contraseña BD de Django}@mongo:27017/${MONGO_DB:?Nombre de la base de datos}?authSource=${MONGO_DB:?Nombre de la base de datos}&appName=pikafit-admin&serverSelectionTimeoutMS=5000
       MONGO_DB: ${MONGO_DB:?Nombre de la base de datos}
       # --- Django
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Clave secreta de Django}
