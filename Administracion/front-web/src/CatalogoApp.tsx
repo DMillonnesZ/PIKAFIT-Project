@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { API_URL } from './config/env'
+import SociosApp from './SociosApp'
 import './catalogo.css'
 
 type Sede = { id: string; nombre: string; direccion: string; activa: boolean }
@@ -59,6 +60,7 @@ function CatalogoApp() {
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
   const [cargando, setCargando] = useState(false)
+  const [vista, setVista] = useState<'catalogos' | 'socios'>('catalogos')
 
   useEffect(() => {
     if (!token) return
@@ -151,6 +153,11 @@ function CatalogoApp() {
         <h1>Sedes y clínicas afiliadas</h1>
         <p>Gestiona los lugares de atención sin eliminar su historial.</p></div>
     </header>
+    <nav className="navegacion-admin" aria-label="Administración del gimnasio">
+      <button type="button" aria-pressed={vista === 'catalogos'} onClick={() => setVista('catalogos')}>Sedes y clínicas</button>
+      <button type="button" aria-pressed={vista === 'socios'} onClick={() => setVista('socios')}>Socios y membresías</button>
+    </nav>
+    {vista === 'socios' ? <SociosApp /> : <>
     {demostracion && <p className="modo-demo">Vista de demostración: los cambios se muestran solo aquí hasta integrar el inicio de sesión del personal.</p>}
     {error && <p className="mensaje error" role="alert">{error}</p>}
     {aviso && <p className="mensaje exito" role="status">{aviso}</p>}
@@ -188,6 +195,7 @@ function CatalogoApp() {
         </li>)}</ul>
       </section>
     </div>
+    </>}
   </main>
 }
 
