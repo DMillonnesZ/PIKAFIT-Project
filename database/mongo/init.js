@@ -7,7 +7,10 @@ pikafit.createUser({
     pwd: process.env.ADMIN_DB_PASSWORD,
     roles: [
         { role: "dbAdmin", db: dbName },
-        { role: "readWrite", db: dbName }
+        { role: "readWrite", db: dbName },
+        // Base temporal que crea "manage.py test"; se elimina al terminar las pruebas
+        { role: "dbAdmin", db: "test_" + dbName },
+        { role: "readWrite", db: "test_" + dbName }
     ]
 });
 
