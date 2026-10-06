@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django_mongodb_backend.fields import ObjectIdField
+import re
 
 from .managers import AdministradorManager
 from .roles import ROLES_CLINICA, Rol
@@ -13,6 +14,7 @@ class Administrador(AbstractBaseUser):
     """Cuenta del personal del gimnasio o de una clínica afiliada. Colección: administradores."""
 
     correo = models.EmailField(unique=True)
+    dni = models.CharField(max_length=8, unique=True, null=True, blank=True)
     nombres = models.CharField(max_length=80)
     apellidos = models.CharField(max_length=80)
     rol = models.CharField(max_length=30, choices=Rol.choices)
@@ -71,5 +73,7 @@ class Administrador(AbstractBaseUser):
         self.correo = (self.correo or "").strip().lower()
         if self.rol in ROLES_CLINICA and not self.clinica_id:
             raise ValidationError({"clinica_id": "El rol seleccionado requiere una clínica asignada."})
+        if self.rol in ROLES_CLINICA and not re.fullmatch(r"[0-9]{8}", self.dni or ""):
+            raise ValidationError({"dni": "El personal de clínica debe tener un DNI de 8 dígitos."})
         if self.rol == Rol.ADMINISTRADOR_GIMNASIO and self.clinica_id:
             raise ValidationError({"clinica_id": "El administrador del gimnasio no puede estar asignado a una clínica."})

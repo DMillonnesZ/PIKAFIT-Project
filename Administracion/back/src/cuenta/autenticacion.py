@@ -2,6 +2,8 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
+from .clinicas import clinica_disponible
+
 
 class AutenticacionJWT(JWTAuthentication):
     """Lee Authorization: Bearer <token_acceso>. Rechaza cuentas inactivas y tokens de sesiones cerradas."""
@@ -10,4 +12,6 @@ class AutenticacionJWT(JWTAuthentication):
         usuario = super().get_user(validated_token)  # valida que exista y esté activo
         if validated_token.get("ver") != usuario.version_sesion:
             raise AuthenticationFailed("Sesión cerrada.", code="sesion_cerrada")
+        if not clinica_disponible(usuario):
+            raise AuthenticationFailed("Clínica inactiva.", code="clinica_inactiva")
         return usuario

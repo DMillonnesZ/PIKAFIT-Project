@@ -10,6 +10,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.exceptions import TokenError
 
 from .correos import enviar_enlace_recuperacion
+from .clinicas import clinica_disponible
 from .excepciones import CredencialesInvalidas, CuentaInactiva, EnlaceInvalido, SesionInvalida
 from .models import Administrador
 from .tokens import TokenPikaFit, emitir_tokens
@@ -37,6 +38,8 @@ def iniciar_sesion(correo, contrasena):
         raise CredencialesInvalidas()
     if not administrador.activo:  # solo se informa si la contraseña es correcta
         raise CuentaInactiva()
+    if not clinica_disponible(administrador):
+        raise CuentaInactiva()
     administrador.last_login = timezone.now()
     administrador.save(update_fields=["last_login"])
     return {**emitir_tokens(administrador), "usuario": administrador}
@@ -48,7 +51,8 @@ def renovar_sesion(token_renovacion):
     except TokenError:
         raise SesionInvalida()
     administrador = _buscar_por_id(refresh.get("user_id"))
-    if administrador is None or not administrador.activo or refresh.get("ver") != administrador.version_sesion:
+    if (administrador is None or not administrador.activo or not clinica_disponible(administrador)
+            or refresh.get("ver") != administrador.version_sesion):
         raise SesionInvalida()
     return emitir_tokens(administrador)["token_acceso"]  # con el rol actualizado
 
