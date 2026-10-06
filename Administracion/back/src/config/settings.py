@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from django_mongodb_backend.utils import parse_uri
 
@@ -41,7 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_mongodb_backend',
     'corsheaders',
+    # Librerías y apps del proyecto
     'rest_framework',
+    'core',
+    'cuenta',
     'sede',
     'clinica',
     'socio',
@@ -92,6 +96,17 @@ DATABASES = {
 # https://docs.djangoproject.com/en/dev/ref/settings/#database-routers
 DATABASE_ROUTERS = ["django_mongodb_backend.routers.MongoRouter"]
 
+# Usuario propio del sistema (colección administradores).
+# Debe definirse antes del primer migrate; después no se puede cambiar sin recrear la base.
+AUTH_USER_MODEL = "cuenta.Administrador"
+
+# Algoritmo de hash de contraseñas. El primero se usa para guardar;
+# el segundo solo permite verificar hashes antiguos.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -109,6 +124,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Recuperación de contraseña: vigencia del enlace (en segundos) y front al que apunta.
+PASSWORD_RESET_TIMEOUT = int(os.environ["RECUPERACION_MINUTOS"]) * 60
+ADMIN_FRONT_URL = os.environ["ADMIN_FRONT_URL"].rstrip("/")
 
 
 # Internationalization
@@ -138,3 +157,38 @@ MIGRATION_MODULES = {
     'auth': 'mongo_migrations.auth',
     'contenttypes': 'mongo_migrations.contenttypes',
 }
+
+
+# Django REST Framework
+# Todo endpoint exige token salvo que se declare público; solo JSON; errores con formato uniforme.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["cuenta.autenticacion.AutenticacionJWT"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "EXCEPTION_HANDLER": "core.excepciones.manejador_global",
+}
+
+# Tokens de sesión (JWT). Clave propia, distinta de SECRET_KEY y de la usada por Spring Boot.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ["JWT_ACCESO_MINUTOS"])),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ["JWT_RENOVACION_DIAS"])),
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": os.environ["DJANGO_JWT_SECRET"],
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "UPDATE_LAST_LOGIN": False,
+}
+
+# Correo: "consola" imprime los correos en el log de admin-back; "smtp" los envía de verdad.
+DEFAULT_FROM_EMAIL = os.environ["DEFAULT_FROM_EMAIL"]
+if os.environ["EMAIL_MODO"] == "smtp":
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.environ["EMAIL_HOST"]
+    EMAIL_PORT = int(os.environ["EMAIL_PORT"])
+    EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
+    EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+    EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"] == "True"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

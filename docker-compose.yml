@@ -4,14 +4,14 @@ services:
     container_name: pikafit-mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
-      MONGO_DB: ${MONGO_DB:?}
-      ADMIN_DB_USER: ${ADMIN_DB_USER}
-      ADMIN_DB_PASSWORD: ${ADMIN_DB_PASSWORD}
-      USUARIO_DB_USER: ${USUARIO_DB_USER}
-      USUARIO_DB_PASSWORD: ${USUARIO_DB_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?Usuario root de MongoDB}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Contraseña root de MongoDB}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:?Nombre de la base de datos}
+      MONGO_DB: ${MONGO_DB:?Nombre de la base de datos}
+      ADMIN_DB_USER: ${ADMIN_DB_USER:?Usuario BD de Django}
+      ADMIN_DB_PASSWORD: ${ADMIN_DB_PASSWORD:?Contraseña BD de Django}
+      USUARIO_DB_USER: ${USUARIO_DB_USER:?Usuario BD de Spring Boot}
+      USUARIO_DB_PASSWORD: ${USUARIO_DB_PASSWORD:?Contraseña BD de Spring Boot}
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
@@ -31,12 +31,28 @@ services:
     container_name: pikafit-admin-back
     restart: unless-stopped
     environment:
-      MONGO_URI: mongodb://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
-      MONGO_DB: ${MONGO_DB}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?}
+      # --- Base de datos
+      MONGO_URI: mongodb://${ADMIN_DB_USER:?Usuario BD de Django}:${ADMIN_DB_PASSWORD:?Contraseña BD de Django}@mongo:27017/${MONGO_DB:?Nombre de la base de datos}?authSource=${MONGO_DB:?Nombre de la base de datos}
+      MONGO_DB: ${MONGO_DB:?Nombre de la base de datos}
+      # --- Django
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Clave secreta de Django}
       DJANGO_DEBUG: "False"
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?}
-      CORS_ALLOWED_ORIGINS: ${ADMIN_FRONT_URL:?}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?Hosts permitidos de Django}
+      CORS_ALLOWED_ORIGINS: ${ADMIN_FRONT_URL:?URL del front de Administración}
+      ADMIN_FRONT_URL: ${ADMIN_FRONT_URL:?URL del front de Administración}
+      # --- Sesiones (JWT) y recuperación de contraseña
+      DJANGO_JWT_SECRET: ${DJANGO_JWT_SECRET:?Clave de firma JWT}
+      JWT_ACCESO_MINUTOS: ${JWT_ACCESO_MINUTOS:?Duración del token de acceso}
+      JWT_RENOVACION_DIAS: ${JWT_RENOVACION_DIAS:?Duración del token de renovación}
+      RECUPERACION_MINUTOS: ${RECUPERACION_MINUTOS:?Vigencia del enlace de recuperación}
+      # --- Correo (EMAIL_HOST..EMAIL_USE_TLS solo se usan con EMAIL_MODO=smtp)
+      EMAIL_MODO: ${EMAIL_MODO:?Modo de correo (consola o smtp)}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:?Remitente de los correos}
     ports:
       - "8000:8000"
     depends_on:
@@ -51,9 +67,9 @@ services:
     container_name: pikafit-usuario-back
     restart: unless-stopped
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://${USUARIO_DB_USER}:${USUARIO_DB_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
+      SPRING_DATA_MONGODB_URI: mongodb://${USUARIO_DB_USER:?Usuario BD de Spring Boot}:${USUARIO_DB_PASSWORD:?Contraseña BD de Spring Boot}@mongo:27017/${MONGO_DB:?Nombre de la base de datos}?authSource=${MONGO_DB:?Nombre de la base de datos}
       SERVER_ADDRESS: 0.0.0.0
-      CORS_ALLOWED_ORIGINS: ${USUARIO_FRONT_URL:?}
+      CORS_ALLOWED_ORIGINS: ${USUARIO_FRONT_URL:?URL del front de Usuario}
     ports:
       - "8080:8080"
     depends_on:
@@ -67,7 +83,7 @@ services:
     build:
       context: ./Administracion/front-web
       args:
-        VITE_API_URL: ${ADMIN_API_URL:?}
+        VITE_API_URL: ${ADMIN_API_URL:?URL de la API de Administración}
     container_name: pikafit-admin-front
     restart: unless-stopped
     ports:
@@ -82,7 +98,7 @@ services:
     build:
       context: ./Usuario/front-web
       args:
-        VITE_API_URL: ${USUARIO_API_URL:?}
+        VITE_API_URL: ${USUARIO_API_URL:?URL de la API de Usuario}
     container_name: pikafit-usuario-front
     restart: unless-stopped
     ports:
