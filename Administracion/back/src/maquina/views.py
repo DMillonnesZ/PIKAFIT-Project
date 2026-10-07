@@ -1,3 +1,5 @@
+import re
+
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -36,7 +38,8 @@ class MaquinaQRVista(APIView):
     def get(self, request, maquina_id):
         maquina = services.obtener(maquina_id)
         respuesta = HttpResponse(qr.generar_svg(maquina), content_type="image/svg+xml")
-        respuesta["Content-Disposition"] = f'attachment; filename="pikafit-maquina-{maquina.codigo}.svg"'
+        codigo_seguro = re.sub(r"[^A-Za-z0-9_-]", "_", maquina.codigo)
+        respuesta["Content-Disposition"] = f'attachment; filename="pikafit-maquina-{codigo_seguro}.svg"'
         respuesta["X-Content-Type-Options"] = "nosniff"
         return respuesta
 

@@ -41,6 +41,7 @@ function MaquinasApp() {
   const [error, setError] = useState('')
   const [aviso, setAviso] = useState('')
   const [cargando, setCargando] = useState(false)
+  const [descargando, setDescargando] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -78,6 +79,29 @@ function MaquinasApp() {
     } finally { setCargando(false) }
   }
 
+  async function descargarQR(maquina: Maquina) {
+    setError(''); setDescargando(maquina.id)
+    try {
+      const respuesta = await fetch(`${api}maquinas/${maquina.id}/qr/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!respuesta.ok) {
+        const contenido = await respuesta.json().catch(() => null) as { mensaje?: string } | null
+        throw new Error(contenido?.mensaje || 'No se pudo descargar el QR.')
+      }
+      const url = URL.createObjectURL(await respuesta.blob())
+      const enlace = document.createElement('a')
+      enlace.href = url
+      enlace.download = `pikafit-maquina-${maquina.codigo.replace(/[^a-zA-Z0-9_-]/g, '_')}.svg`
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo descargar el QR.')
+    } finally { setDescargando(null) }
+  }
+
   return <div className="seccion-maquinas">
     {!token && <p className="modo-demo">Inicia sesión en Administración para registrar máquinas y descargar sus QR.</p>}
     {error && <p className="mensaje error" role="alert">{error}</p>}
@@ -110,6 +134,9 @@ function MaquinasApp() {
             <small>{sedes.find(s => s.id === m.sede_id)?.nombre ?? 'Sede histórica'}</small>
             <span className={m.estado === 'operativa' ? 'estado activo' : 'estado'}>{m.estado.replace('_', ' ')}</span>
           </div>
+          <div className="fila-acciones"><button type="button" className="enlace" disabled={descargando === m.id} onClick={() => void descargarQR(m)}>
+            {descargando === m.id ? 'Preparando QR…' : 'Descargar QR'}
+          </button></div>
         </li>)}</ul>
         {!maquinas.length && <p>Aún no hay máquinas registradas.</p>}
       </section>
