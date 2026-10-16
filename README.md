@@ -13,3 +13,8 @@ Plataforma de gestión y bienestar físico para gimnasios: rutinas personalizada
 ## Metodología
 
 Ágil con Scrum. Base de datos MongoDB y arquitectura de monolito modular por capas.
+
+## Sprint 1 - Completado (Módulo Usuario)
+- Endpoints de Login, Consentimiento, Perfil, Pase QR y Validación implementados.
+- Pruebas unitarias básicas agregadas.
+- Documentación técnica de la API agregada en `API_DOCS.md`.
