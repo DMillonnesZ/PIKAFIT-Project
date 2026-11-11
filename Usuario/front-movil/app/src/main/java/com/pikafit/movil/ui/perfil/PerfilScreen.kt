@@ -1,4 +1,4 @@
-package com.pikafit.movil.ui
+package com.pikafit.movil.ui.perfil
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

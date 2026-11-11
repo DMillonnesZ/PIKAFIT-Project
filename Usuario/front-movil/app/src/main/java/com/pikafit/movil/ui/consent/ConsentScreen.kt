@@ -1,4 +1,4 @@
-package com.pikafit.movil.ui
+package com.pikafit.movil.ui.consent
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
