@@ -7,12 +7,18 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pikafit.usuario.socio.service.IdentidadSocioService;
+import com.pikafit.usuario.socio.service.VigenciaMembresiaService;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, VigenciaMembresiaFilter vigenciaMembresiaFilter) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http,
+                                    IdentidadSocioService identidadSocio,
+                                    VigenciaMembresiaService vigenciaMembresia,
+                                    ObjectMapper json) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
@@ -20,7 +26,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/clinicas").permitAll()
                         .anyRequest().authenticated())
-                .addFilterAfter(vigenciaMembresiaFilter, AuthorizationFilter.class);
+                .addFilterAfter(new VigenciaMembresiaFilter(identidadSocio, vigenciaMembresia, json),
+                        AuthorizationFilter.class);
         return http.build();
     }
 }
