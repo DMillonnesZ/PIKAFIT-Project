@@ -1,27 +1,37 @@
 package com.pikafit.usuario.controller;
 
 import com.pikafit.usuario.dto.LoginRequest;
+import com.pikafit.usuario.model.Socio;
+import com.pikafit.usuario.service.AuthException;
+import com.pikafit.usuario.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
+
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
     @PostMapping("/login-socio")
     public ResponseEntity<?> loginSocio(@RequestBody LoginRequest request) {
-        if (request.getDni() == null || request.getGoogleToken() == null) {
-            return ResponseEntity.badRequest().body("Faltan datos obligatorios");
+        if (request.getDni() == null || request.getDni().isBlank()
+                || request.getGoogleToken() == null || request.getGoogleToken().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "Faltan datos obligatorios"));
         }
+        Socio socio = authService.loginSocio(request.getDni().trim(), request.getGoogleToken());
+        // TODO (siguiente paso): emitir JWT propio de sesión.
+        return ResponseEntity.ok(Map.of("status", "success", "socioId", socio.getId()));
+    }
 
-        if ("12345678".equals(request.getDni()) && "token-google-valido".equals(request.getGoogleToken())) {
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("token", "jwt-token-simulado-para-el-socio");
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.status(401).body("Credenciales inválidas o cuenta no activada");
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<Map<String, String>> manejarAuth(AuthException e) {
+        return ResponseEntity.status(e.getStatus()).body(Map.of("mensaje", e.getMessage()));
     }
 }
